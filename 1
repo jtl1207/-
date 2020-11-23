@@ -1,0 +1,55 @@
+#-*- coding:utf-8 -*-
+from selenium import webdriver
+import time
+import re
+ 
+ 
+"""---------打开谷歌浏览器进行selenium自动化测试--------"""
+chromedriver = 'chromedriver.exe'
+chome_options = webdriver.ChromeOptions()
+wd = webdriver.Chrome(chromedriver, chrome_options=chome_options)
+wd.delete_all_cookies()  # 删除cookies
+wd.maximize_window()  # 将浏览器最大化
+wd.implicitly_wait(120)
+"""------------------以上代码不需要改动-----------------"""
+ 
+"""------------------自动登录-----------------"""
+wd.get("http://start.lgb360.com/video.html")# 调用WebDriver 对象的get方法 让浏览器打开刷课网址
+print("正在自动登录！")
+element = wd.find_element_by_xpath("/html/body/div/div[2]/div/div[1]/span[2]")    #账户登录按钮
+element.click()    #单击
+element = wd.find_element_by_xpath("/html/body/div/div[2]/div/div[2]/ul[1]/li[4]/div/span")    #账号密码登陆按钮
+element.click()    #单击
+time.sleep(1)    #设定1秒延时时间，等待页面加载
+element = wd.find_element_by_class_name("idCard")
+element.send_keys('账号')    #修改为自己的账号
+element = wd.find_element_by_class_name("password")
+element.send_keys('密码')     #修改为自己的密码
+element = wd.find_element_by_xpath("/html/body/div/div[2]/div/div[2]/ul[2]/li[4]/input")
+element.click()    #单击
+"""------------------以上代码只需要改动账号、密码就可实现自动登录----------------"""
+ 
+print("请选择要学习的课程页面！")
+time.sleep(30)    #设定30秒延时等待时间，等待选择要学习的章节单元
+ 
+ 
+for i in range(1,20):    #设置视频个数，当前为20个
+    sj_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div[" + str(i) + "]/div[1]/span"    #时长的xpath
+    sp_xpath = "/html/body/div[1]/div[2]/div[1]/div[2]/div/div["+ str(i) +"]/div[2]/ul/li[1]"  #标题的xpath
+    try:
+        sjs = wd.find_elements_by_xpath(sj_xpath)
+        sp = wd.find_element_by_xpath(sp_xpath)
+        print("即将播放:",sp.text)
+        sp.click()
+        for sj in sjs:
+            try:
+                n = re.findall("-?[0-9]\d*", sj.text)
+                print(n)
+                m = int(n[2]) * 60 + int(n[3])    #秒数换算
+                print("该视频秒数为：",m)
+            except Exception as e:
+                pass
+        time.sleep(int(m))   #延时时间为该视频的总长度，即播放完成
+        time.sleep(3)    #设置3秒延时，以防视频没有加载出来
+    except Exception as e:
+        pass
